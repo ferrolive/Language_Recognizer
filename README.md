@@ -1,4 +1,4 @@
-# Language_Recognizer
+# Language Recognizer
 A simple function to help recognize languages based in a dictionary.
 
-Just a simple function to improve language recognization.
+Just a simple function to help with language recognization.
