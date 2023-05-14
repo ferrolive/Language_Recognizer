@@ -4,61 +4,50 @@
 	Just a function to help recognize languages
 **/
 
-function getLanguage($text, $default) {
-	$supported_languages = array(
-	  'en','de','it','es','fr'
-	);
+function getLanguage($text, $default='en') {
 
-	$wordList['de'] = array('der', 'die', 'und', 'den', 'von', 'zu', 'das', 'mit', 'sich', 'als','des', 'auf', 'für', 
-		'ist', 'im', 'dem', 'nicht', 'ein', 'Die', 'eine','mehr','einem','mir','hier','hat','sind','dich','danke','ich');
+	$wordList['de'] = array('der', 'die', 'und', 'den', 'von', 'zu', 'das', 'mit', 'sich', 'als','des', 'auf', 'für', 'lektion','Vielen','Klasse',
+		'ist', 'im', 'dem', 'nicht', 'ein', 'Die', 'eine','mehr','einem','mir','hier','wenn','hat','sind','dich','danke','ich','haben','klass','habe','wir');
 
-	$wordList['en'] = array('the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'I', 'it', 'for', 'not', 
-		'on', 'with', 'he', 'good', 'you', 'do', 'at','much','sorry','she','thank','is','had','me','great','always');
+	$wordList['en'] = array('the', 'be', 'to', 'of', 'and', 'enjoyed', 'in', 'that', 'have', 'I', 'it', 'for', 'not', 'talking','excellent',
+		'on', 'with', 'he', 'good', 'you', 'do', 'at','much','sorry','she','thank','lesson','is','had','me','great','always','thanks','very','fantastic','sure','must');	
 
-	$wordList['it'] = array('non', 'di', 'che', 'è', 'il', 'un', 'per', 'una', 'mi', 'sono', 'ho', 'Io', 'ma','mille','molto', 
-		'lo', 'ha','richieste','studenti','chesto','si','io','grazie', 'avere','ci','essere','mio','perché','questa');
+	$wordList['it'] = array('non', 'di', 'che', 'è', 'il', 'un', 'per', 'una', 'mi', 'sono', 'ho', 'Io', 'ma','mille','molto', 'parole','buon','oggi',
+		'lo', 'ha','richieste','studenti','chesto','si','io','grazie', 'avere','ci','essere','mio','perché','questa','lezione','lezioni','presto','prossima','vediamo');
 
-	$wordList['es'] = array('si', 'mucho', 'gusto', 'és', 'Hola', 'el', 'del', 'que', 'y', 'en', 'un', 'una', 'hablas', 'haber', 
-		'con', 'su','hacer','pero','otro','cuando','muchas','gracias','asta','año','primero','bien','ahora','siempre','muy');
+	$wordList['es'] = array('si', 'mucho', 'gusto', 'és', 'Hola', 'el', 'del', 'que', 'y', 'en', 'un', 'una', 'hablas', 'haber', 'clase','hoy','poco',
+		'con', 'su','hacer','pero','otro','cuando','muchas','gracias','hasta','año','primero','bien','ahora','siempre','lección','muy','quiero','lecciones','sido','han');
 
-	$wordList['fr'] = array('le', 'à', 'et', 'être', 'avoir', 'pour', 'dans', 'ce', 'qui', 'ne', 'sur', 'plus', 'pas', 'pouvoir', 
-		'par', 'je','avec','tout','un','autre','comme','elle','aussi','vous','merci','mon','en','nous','tres');
+	$wordList['fr'] = array('le', 'beaucoup', 'et', 'être', 'avoir', 'pour', 'dans', 'ce', 'qui', 'ne', 'sur', 'plus', 'pas','pouvoir', 
+		'par', 'je','avec','tout','un','autre','comme','elle','aussi','vous','merci','mon','en','nous','leçon','tres','suis','à','étudié','agréable','progresse','voici','bonjour');
+
+	$wordList['sv'] = array('idag','svenska','kan','bra','vacker','svårt','lätt','tack','tacker','jag','gej','ja','lärare','nästa','komma','och','lektion',
+		'semester','studera','klass','förstar','huvuden','vecka','år','då','imorgon','igår','Kalender','sekund','timme','minut','göra','var','lextioner','mycket','hej','snalla');
+
+	$wordList['pt'] = array('lição','aula','obrigado','obrigada','certeza','estudei','sim','não','certo','com','muito','gosto','olá','em','uma','palavra',
+		'falar','fazer','outro','quando','muitas','nossa','nosso','até','amanhã','noite','dia','bem','bom','hora','sempre','pode','bela','professor','professora','gosto','boa');
 
 
 	$text = strtolower(preg_replace("/[^A-Za-z]/", ' ', $text));
+	$words = str_word_count($text, 1);
+	$words = array_count_values($words);
 
-	foreach ($supported_languages as $language) {
-		$counter[$language]=0;
+	$scores = [];
+	foreach ($wordList as $lang => $list) {
+	$commonWords = array_intersect_key($words, array_flip($list));
+	$scores[$lang] = array_sum($commonWords);
 	}
-	
-	$total = 0;
-	for ($i = 0; $i < 30; $i++) {
-		foreach ($supported_languages as $language) {
-		    $string = "/\b(".$wordList[$language][$i].")\b/";
 
-		    if ( preg_match_all($string,$text) ) {
-		    	$counter[$language] = $counter[$language] + 1;
-		    }
-		}
-	}
-	$max = max($counter);
-	$maxs = array_keys($counter, $max);
+	arsort($scores);
 
-	if (count($maxs) == 1) {
-		$winner = $maxs[0];
-		$second = 0;
-		
-		foreach ($supported_languages as $language) {
-			if ($language <> $winner) {
-				if ($counter[$language]>$second) {
-					$second = $counter[$language];
-				}
-			}
-		}
-		if (($second / $max) < 0.20) {
-			return $winner;
-		} 
+	// Get the keys of the scores array
+	$scoreKeys = array_keys($scores);
+
+	// Compare the first and the second scores
+	if (isset($scoreKeys[1]) && $scores[$scoreKeys[0]] > $scores[$scoreKeys[1]] * 5) {
+	return $scoreKeys[0];
 	}
+
 	return $default;
 }
 ?>
